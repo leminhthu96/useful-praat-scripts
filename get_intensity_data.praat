@@ -18,6 +18,9 @@ directory$ = "D:\slp 2nd term assignment\Focus-assignment\Focus-assignment\"
 ## clear out old outputs: 
 filedelete 'directory$'formant-log.csv
 filedelete 'directory$'intensity-log.csv
+filedelete 'directory$'duration-foot-log.csv
+filedelete 'directory$'duration-accented-log.csv
+
 
 ## prepare header row of 2 new files, pitch and intensity are saved in seperate files 
 
@@ -28,6 +31,14 @@ header_row$ > 'directory$'pitch-log.csv
 header_row_intensity$ = "Sentence" + "," + "repetition" + "," + "Pt1" + "," + "Pt2" + "," + "Pt3"+ newline$
 
 header_row_intensity$ > 'directory$'intensity-log.csv
+
+header_row_duration_foot$ = "Sentence, Repetition, Melanie's, wearing a, lily" + newline$
+
+header_row_duration_foot$> 'directory$'duration-foot-log.csv
+
+header_row_duration_syl$ = "Sentence, Repetition, Mel, wear, li" + newline$
+
+header_row_duration_syl$> 'directory$'duration-accented-log.csv
 
 ## read data from root directory. Read all file name including extension in as a list, then loop through the list, chop off the extension
 ## and read in the text grid and process one by one.
@@ -123,6 +134,66 @@ for j from 1 to number_files
 		fileappend "'directory$'intensity-log.csv" 'intensity:3' 'endl$'
 
     endfor
+
+	## switch context to textgrid, select tier 6 for foot duration processing
+	select TextGrid 'object_name$'
+    number_of_intervals_foot = Get number of intervals... 6
+
+	attempt = 1
+	for b from 1 to number_of_intervals_foot
+		accented_label$ = Get label of interval... 6 'b'
+		if accented_label$ <> ""
+			if accented_label$ = "Melanie's"
+				fileappend "'directory$'duration-foot-log.csv" 'object_name$' ,  'attempt:0' ,
+				attempt = attempt +1
+			endif
+			select TextGrid 'object_name$'
+			
+			begin_t = Get starting point... 6 'b'
+			end_t = Get end point... 6 'b'
+
+			duration = end_t - begin_t
+
+			if accented_label$ = "lily"
+				endl$ = newline$
+			else
+				endl$ =  ","
+			endif
+
+			fileappend "'directory$'duration-foot-log.csv" 'duration:3' 'endl$'
+		endif
+
+	endfor
+
+	## switch context to textgrid, select tier 5 for accented syllable duration processing
+	select TextGrid 'object_name$'
+    number_of_intervals_accented = Get number of intervals... 5
+
+	attempt = 1
+	for b from 1 to number_of_intervals_accented
+		accented_label$ = Get label of interval... 5 'b'
+		if accented_label$ = "Mel" or accented_label$ = "wear" or accented_label$ = "li"
+			if accented_label$ = "Mel" 
+				fileappend "'directory$'duration-accented-log.csv" 'object_name$' ,  'attempt:0' ,
+				attempt = attempt +1
+			endif
+			select TextGrid 'object_name$'
+			begin_t = Get starting point... 5 'b'
+			end_t = Get end point... 5 'b'
+
+			duration = end_t - begin_t
+
+			if accented_label$ = "li"
+				endl$ = newline$
+			else
+				endl$ =  ","
+			endif
+
+			fileappend "'directory$'duration-accented-log.csv" 'duration:3' 'endl$'
+		endif		
+		
+
+	endfor
 
 endfor
 
